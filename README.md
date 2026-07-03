@@ -57,14 +57,20 @@ Built with **Tauri v2**, **Rust**, **React 19**, and **TypeScript**.
 ### Debian / Ubuntu
 
 ```bash
-sudo dpkg -i SysTempulse_0.1.1_amd64.deb
+sudo dpkg -i SystemPulse_1.0.0_amd64.deb
+```
+
+### openSUSE / Fedora (RPM)
+
+```bash
+sudo rpm -i SystemPulse-1.0.0-1.x86_64.rpm
 ```
 
 ### AppImage
 
 ```bash
-chmod +x SysTempulse_0.1.1_amd64.AppImage
-./SysTempulse_0.1.1_amd64.AppImage
+chmod +x SystemPulse_1.0.0_amd64.AppImage
+./SystemPulse_1.0.0_amd64.AppImage
 ```
 
 ---

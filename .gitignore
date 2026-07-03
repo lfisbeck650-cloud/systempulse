@@ -3,5 +3,6 @@ dist/
 target/
 *.AppImage
 *.deb
+*.rpm
 squashfs-root/
 .DS_Store
