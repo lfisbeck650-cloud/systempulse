@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useSystemInfo } from './hooks/useSystemInfo';
 import { ProcessTable } from './components/ProcessTable';
 import { SystemStats } from './components/SystemStats';
@@ -15,12 +15,21 @@ const TABS: { id: Tab; label: string }[] = [
 function App() {
   const [tab, setTab] = useState<Tab>('processes');
   const [theme, setTheme] = useState<Theme>('dark');
-  const { snapshot, error, killProcess } = useSystemInfo();
+  const [pollInterval, setPollInterval] = useState(2000);
+  const { snapshot, error, toasts, killProcess, dismissToast } = useSystemInfo(pollInterval);
+
+  const handleThemeChange = useCallback((t: Theme) => setTheme(t), []);
 
   return (
     <div className={`app theme-${theme}`}>
       <header className="app-header">
-        <h1>SysTempulse</h1>
+        <div className="header-brand">
+          <svg className="header-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          <h1>SystemPulse</h1>
+        </div>
         <nav className="tabs">
           {TABS.map((t) => (
             <button
@@ -48,23 +57,42 @@ function App() {
         </div>
       </header>
 
-      {error && <div className="error-bar">Error: {error}</div>}
+      {error && <div className="error-bar">{error}</div>}
 
       <main className="app-main">
-        {tab === 'processes' && snapshot && (
-          <ProcessTable
-            processes={snapshot.processes}
-            onKill={killProcess}
-          />
-        )}
-        {tab === 'system' && snapshot && <SystemStats snapshot={snapshot} />}
-        {tab === 'settings' && (
-          <Settings theme={theme} onThemeChange={setTheme} />
-        )}
+        <div className={`tab-content ${tab === 'processes' ? 'active' : ''}`}>
+          {tab === 'processes' && snapshot && (
+            <ProcessTable processes={snapshot.processes} onKill={killProcess} />
+          )}
+        </div>
+        <div className={`tab-content ${tab === 'system' ? 'active' : ''}`}>
+          {tab === 'system' && snapshot && <SystemStats snapshot={snapshot} />}
+        </div>
+        <div className={`tab-content ${tab === 'settings' ? 'active' : ''}`}>
+          {tab === 'settings' && (
+            <Settings
+              theme={theme}
+              onThemeChange={handleThemeChange}
+              pollInterval={pollInterval}
+              onPollIntervalChange={setPollInterval}
+            />
+          )}
+        </div>
         {!snapshot && !error && (
-          <div className="loading">Loading system data...</div>
+          <div className="loading">
+            <div className="spinner" />
+            <span>Loading system data...</span>
+          </div>
         )}
       </main>
+
+      <div className="toast-container">
+        {toasts.map((t) => (
+          <div key={t.id} className={`toast toast-${t.type}`} onClick={() => dismissToast(t.id)}>
+            {t.message}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

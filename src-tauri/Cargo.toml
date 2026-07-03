@@ -1,6 +1,6 @@
 [package]
 name = "systempulse"
-version = "0.1.1"
+version = "1.0.0"
 description = "Modern open-source Linux task manager with a beautiful GUI"
 authors = ["lenny182"]
 license = "MIT"

@@ -215,13 +215,16 @@ impl AppSystem {
 
     pub fn kill_process(&self, pid: u32) -> Result<(), String> {
         let sys = self.system.read().unwrap_or_else(|e| e.into_inner());
-        if let Some(process) = sys.process(Pid::from_u32(pid)) {
-            if !process.kill() {
-                return Err("Failed to kill process".to_string());
+        match sys.process(Pid::from_u32(pid)) {
+            Some(process) => {
+                let name = process.name().to_string_lossy().to_string();
+                if !process.kill() {
+                    Err(format!("Failed to kill process {} ({})", pid, name))
+                } else {
+                    Ok(())
+                }
             }
-            Ok(())
-        } else {
-            Err("Process not found".to_string())
+            None => Err(format!("Process with PID {} not found", pid)),
         }
     }
 }

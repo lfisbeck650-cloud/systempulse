@@ -34,11 +34,32 @@ function uptimeStr(secs: number): string {
   return `${m}m ${s}s`;
 }
 
+function Gauge({ pct, color }: { pct: number; color: string }) {
+  const r = 54;
+  const circ = 2 * Math.PI * r;
+  const offset = circ * (1 - Math.min(pct, 100) / 100);
+  return (
+    <div className="gauge">
+      <svg viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r={r} fill="none" stroke="var(--bg-tertiary)" strokeWidth="8" />
+        <circle
+          cx="60" cy="60" r={r}
+          fill="none" stroke={color}
+          strokeWidth="8"
+          strokeDasharray={`${circ}`}
+          strokeDashoffset={`${offset}`}
+          strokeLinecap="round"
+          transform="rotate(-90 60 60)"
+        />
+      </svg>
+      <div className="gauge-text">{pct.toFixed(1)}%</div>
+    </div>
+  );
+}
+
 export function SystemStats({ snapshot }: Props) {
-  const { cpus, memory, disks, networks, uptime, host_name, os_version, kernel_version } =
-    snapshot;
-  const cpuAvg =
-    cpus.reduce((s, c) => s + c.usage, 0) / (cpus.length || 1);
+  const { cpus, memory, disks, networks, uptime, host_name, os_version, kernel_version } = snapshot;
+  const cpuAvg = cpus.reduce((s, c) => s + c.usage, 0) / (cpus.length || 1);
   const memPct = pct(memory.used, memory.total);
 
   return (
@@ -71,34 +92,13 @@ export function SystemStats({ snapshot }: Props) {
         <div className="stat-card">
           <h3>CPU</h3>
           <div className="gauge-container">
-            <div className="gauge">
-              <svg viewBox="0 0 120 120">
-                <circle
-                  cx="60" cy="60" r="54"
-                  fill="none" stroke="var(--bg-tertiary)"
-                  strokeWidth="8"
-                />
-                <circle
-                  cx="60" cy="60" r="54"
-                  fill="none" stroke="var(--accent)"
-                  strokeWidth="8"
-                  strokeDasharray={`${2 * Math.PI * 54}`}
-                  strokeDashoffset={`${2 * Math.PI * 54 * (1 - cpuAvg / 100)}`}
-                  strokeLinecap="round"
-                  transform="rotate(-90 60 60)"
-                />
-              </svg>
-              <div className="gauge-text">{cpuAvg.toFixed(1)}%</div>
-            </div>
+            <Gauge pct={cpuAvg} color="var(--cpu-color)" />
           </div>
-          {cpus.map((cpu, i) => (
+          {cpus.slice(0, 32).map((cpu, i) => (
             <div key={i} className="mini-bar-row">
               <span className="mini-label">CPU {i}</span>
               <div className="bar-container">
-                <div
-                  className="bar cpu-bar"
-                  style={{ width: `${cpu.usage}%` }}
-                />
+                <div className="bar cpu-bar" style={{ width: `${cpu.usage}%` }} />
                 <span>{cpu.usage.toFixed(1)}%</span>
               </div>
             </div>
@@ -108,25 +108,7 @@ export function SystemStats({ snapshot }: Props) {
         <div className="stat-card">
           <h3>Memory</h3>
           <div className="gauge-container">
-            <div className="gauge">
-              <svg viewBox="0 0 120 120">
-                <circle
-                  cx="60" cy="60" r="54"
-                  fill="none" stroke="var(--bg-tertiary)"
-                  strokeWidth="8"
-                />
-                <circle
-                  cx="60" cy="60" r="54"
-                  fill="none" stroke="var(--memory-color)"
-                  strokeWidth="8"
-                  strokeDasharray={`${2 * Math.PI * 54}`}
-                  strokeDashoffset={`${2 * Math.PI * 54 * (1 - memPct / 100)}`}
-                  strokeLinecap="round"
-                  transform="rotate(-90 60 60)"
-                />
-              </svg>
-              <div className="gauge-text">{memPct.toFixed(1)}%</div>
-            </div>
+            <Gauge pct={memPct} color="var(--memory-color)" />
           </div>
           <div className="stat-row">
             <span className="stat-label">Used</span>
@@ -153,10 +135,7 @@ export function SystemStats({ snapshot }: Props) {
                   <span>{fmt(d.used)} / {fmt(d.total)}</span>
                 </div>
                 <div className="bar-container">
-                  <div
-                    className="bar disk-bar"
-                    style={{ width: `${dp}%` }}
-                  />
+                  <div className="bar disk-bar" style={{ width: `${dp}%` }} />
                   <span>{dp.toFixed(0)}%</span>
                 </div>
               </div>

@@ -55,3 +55,9 @@ export interface SystemSnapshot {
 export type Theme = 'dark' | 'light' | 'dracula' | 'nord';
 export type SortField = 'cpu_usage' | 'memory_percent' | 'name' | 'pid';
 export type Tab = 'processes' | 'system' | 'settings';
+
+export interface Toast {
+  id: number;
+  message: string;
+  type: 'success' | 'error' | 'info';
+}

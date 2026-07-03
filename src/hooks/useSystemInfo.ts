@@ -1,42 +1,63 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { invoke } from '@tauri-apps/api/core';
-import type { SystemSnapshot } from '../types';
+import type { SystemSnapshot, Toast } from '../types';
 
-const POLL_INTERVAL = 2000;
+let toastId = 0;
 
-export function useSystemInfo() {
+export function useSystemInfo(pollInterval = 2000) {
   const [snapshot, setSnapshot] = useState<SystemSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const intervalRef = useRef<number | null>(null);
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const mountedRef = useRef(true);
+
+  const addToast = useCallback((message: string, type: Toast['type'] = 'info') => {
+    const id = ++toastId;
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 4000);
+  }, []);
 
   const fetch = useCallback(async () => {
     try {
       const data = await invoke<SystemSnapshot>('get_system_snapshot');
-      setSnapshot(data);
-      setError(null);
+      if (mountedRef.current) {
+        setSnapshot(data);
+        setError(null);
+      }
     } catch (err) {
-      setError(String(err));
+      if (mountedRef.current) {
+        setError(String(err));
+      }
     }
   }, []);
 
   const killProcess = useCallback(async (pid: number) => {
     try {
       await invoke('kill_process', { pid });
+      addToast(`Process ${pid} terminated`, 'success');
       fetch();
     } catch (err) {
-      setError(String(err));
+      addToast(`Failed to kill ${pid}: ${err}`, 'error');
     }
-  }, [fetch]);
+  }, [fetch, addToast]);
 
   useEffect(() => {
+    mountedRef.current = true;
     fetch();
-    intervalRef.current = window.setInterval(fetch, POLL_INTERVAL);
+    intervalRef.current = setInterval(fetch, pollInterval);
     return () => {
+      mountedRef.current = false;
       if (intervalRef.current !== null) {
         clearInterval(intervalRef.current);
       }
     };
-  }, [fetch]);
+  }, [fetch, pollInterval]);
 
-  return { snapshot, error, killProcess };
+  const dismissToast = useCallback((id: number) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
+
+  return { snapshot, error, toasts, killProcess, dismissToast, addToast };
 }

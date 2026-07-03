@@ -25,12 +25,19 @@ export function ProcessTable({ processes, onKill }: Props) {
   const [sortField, setSortField] = useState<SortField>('cpu_usage');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [filter, setFilter] = useState('');
+  const [confirmPid, setConfirmPid] = useState<number | null>(null);
 
   const sorted = useMemo(() => {
     const list = filter
-      ? processes.filter((p) =>
-          p.name.toLowerCase().includes(filter.toLowerCase())
-        )
+      ? processes.filter((p) => {
+          const q = filter.toLowerCase();
+          return (
+            p.name.toLowerCase().includes(q) ||
+            String(p.pid).includes(q) ||
+            p.user.toLowerCase().includes(q) ||
+            p.status.toLowerCase().includes(q)
+          );
+        })
       : processes;
     return [...list].sort((a, b) => {
       let cmp = 0;
@@ -66,12 +73,23 @@ export function ProcessTable({ processes, onKill }: Props) {
     return sortDir === 'desc' ? ' ▼' : ' ▲';
   }
 
+  function handleKill(pid: number) {
+    setConfirmPid(pid);
+  }
+
+  function confirmKill() {
+    if (confirmPid !== null) {
+      onKill(confirmPid);
+      setConfirmPid(null);
+    }
+  }
+
   return (
     <div className="process-table">
       <div className="process-toolbar">
         <input
           type="text"
-          placeholder="Filter processes..."
+          placeholder="Filter by name, PID, user, status..."
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           className="filter-input"
@@ -84,12 +102,8 @@ export function ProcessTable({ processes, onKill }: Props) {
             <tr>
               <th onClick={() => toggleSort('pid')}>PID{sortArrow('pid')}</th>
               <th onClick={() => toggleSort('name')}>Name{sortArrow('name')}</th>
-              <th onClick={() => toggleSort('cpu_usage')}>
-                CPU%{sortArrow('cpu_usage')}
-              </th>
-              <th onClick={() => toggleSort('memory_percent')}>
-                MEM%{sortArrow('memory_percent')}
-              </th>
+              <th onClick={() => toggleSort('cpu_usage')}>CPU%{sortArrow('cpu_usage')}</th>
+              <th onClick={() => toggleSort('memory_percent')}>MEM%{sortArrow('memory_percent')}</th>
               <th>Memory</th>
               <th>Status</th>
               <th>User</th>
@@ -101,22 +115,16 @@ export function ProcessTable({ processes, onKill }: Props) {
             {sorted.slice(0, 500).map((p) => (
               <tr key={p.pid}>
                 <td className="pid">{p.pid}</td>
-                <td className="name">{p.name}</td>
+                <td className="name" title={p.command}>{p.name}</td>
                 <td className="cpu">
                   <div className="bar-container">
-                    <div
-                      className="bar cpu-bar"
-                      style={{ width: `${Math.min(p.cpu_usage, 100)}%` }}
-                    />
+                    <div className="bar cpu-bar" style={{ width: `${Math.min(p.cpu_usage, 100)}%` }} />
                     <span>{p.cpu_usage.toFixed(1)}</span>
                   </div>
                 </td>
                 <td className="mem">
                   <div className="bar-container">
-                    <div
-                      className="bar mem-bar"
-                      style={{ width: `${Math.min(p.memory_percent, 100)}%` }}
-                    />
+                    <div className="bar mem-bar" style={{ width: `${Math.min(p.memory_percent, 100)}%` }} />
                     <span>{p.memory_percent.toFixed(1)}</span>
                   </div>
                 </td>
@@ -125,11 +133,7 @@ export function ProcessTable({ processes, onKill }: Props) {
                 <td>{p.user}</td>
                 <td>{formatUptime(p.uptime)}</td>
                 <td>
-                  <button
-                    className="kill-btn"
-                    onClick={() => onKill(p.pid)}
-                    title={`Kill ${p.pid}`}
-                  >
+                  <button className="kill-btn" onClick={() => handleKill(p.pid)} title={`Kill ${p.pid}`}>
                     ✕
                   </button>
                 </td>
@@ -138,6 +142,18 @@ export function ProcessTable({ processes, onKill }: Props) {
           </tbody>
         </table>
       </div>
+
+      {confirmPid !== null && (
+        <div className="confirm-overlay" onClick={() => setConfirmPid(null)}>
+          <div className="confirm-dialog" onClick={(e) => e.stopPropagation()}>
+            <p>Kill process <strong>{confirmPid}</strong>?</p>
+            <div className="confirm-actions">
+              <button className="btn btn-secondary" onClick={() => setConfirmPid(null)}>Cancel</button>
+              <button className="btn btn-danger" onClick={confirmKill}>Kill</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
