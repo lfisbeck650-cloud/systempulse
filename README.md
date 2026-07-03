@@ -57,14 +57,14 @@ Built with **Tauri v2**, **Rust**, **React 19**, and **TypeScript**.
 ### Debian / Ubuntu
 
 ```bash
-sudo dpkg -i SysTempulse_0.1.0_amd64.deb
+sudo dpkg -i SysTempulse_0.1.1_amd64.deb
 ```
 
 ### AppImage
 
 ```bash
-chmod +x SysTempulse_0.1.0_amd64.AppImage
-./SysTempulse_0.1.0_amd64.AppImage
+chmod +x SysTempulse_0.1.1_amd64.AppImage
+./SysTempulse_0.1.1_amd64.AppImage
 ```
 
 ---

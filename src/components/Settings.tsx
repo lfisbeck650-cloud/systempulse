@@ -36,7 +36,7 @@ export function Settings({ theme, onThemeChange }: Props) {
           <p><strong>SysTempulse</strong> v0.1.1</p>
           <p>Open source Linux task manager built with Tauri + Rust + React</p>
           <p>
-            <a href="https://github.com/lenny182/systempulse" target="_blank" rel="noreferrer">
+            <a href="https://github.com/lfisbeck650-cloud/systempulse" target="_blank" rel="noreferrer">
               GitHub Repository
             </a>
           </p>

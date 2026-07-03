@@ -4,7 +4,7 @@ version = "0.1.1"
 description = "Modern open-source Linux task manager with a beautiful GUI"
 authors = ["lenny182"]
 license = "MIT"
-repository = "https://github.com/lenny182/systempulse"
+repository = "https://github.com/lfisbeck650-cloud/systempulse"
 edition = "2021"
 rust-version = "1.77.2"
 
