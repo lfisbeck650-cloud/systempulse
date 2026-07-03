@@ -33,7 +33,7 @@ export function Settings({ theme, onThemeChange }: Props) {
       <div className="settings-card">
         <h2>About</h2>
         <div className="about-info">
-          <p><strong>SysTempulse</strong> v0.1.0</p>
+          <p><strong>SysTempulse</strong> v0.1.1</p>
           <p>Open source Linux task manager built with Tauri + Rust + React</p>
           <p>
             <a href="https://github.com/lenny182/systempulse" target="_blank" rel="noreferrer">
