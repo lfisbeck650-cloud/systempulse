@@ -36,7 +36,7 @@ export interface ProcessInfo {
   status: string;
   user: string;
   command: string;
-  start_time: number;
+  uptime: number;
 }
 
 export interface SystemSnapshot {

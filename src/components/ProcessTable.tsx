@@ -123,7 +123,7 @@ export function ProcessTable({ processes, onKill }: Props) {
                 <td>{formatMem(p.memory)}</td>
                 <td>{p.status}</td>
                 <td>{p.user}</td>
-                <td>{formatUptime(p.start_time)}</td>
+                <td>{formatUptime(p.uptime)}</td>
                 <td>
                   <button
                     className="kill-btn"
